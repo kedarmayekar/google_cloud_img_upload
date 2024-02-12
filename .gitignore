@@ -1,5 +1,6 @@
 .env
 .idea/
 __pycache__/
-credentials
+credentials/
 images
+.env.example
