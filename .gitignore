@@ -3,4 +3,3 @@
 __pycache__/
 credentials/
 images
-.env.example
