@@ -51,6 +51,9 @@ def upload():
     except Exception as e:
         print('api call ',e)
 
+@app.route('/', methods=['GET'])
+def hello():
+    return jsonify({'message': 'ok'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
