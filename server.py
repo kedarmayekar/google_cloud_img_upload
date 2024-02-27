@@ -55,5 +55,9 @@ def upload():
 def hello():
     return jsonify({'message': 'ok'}), 200
 
+@app.route('/status', methods=['GET'])
+def status_check():
+    return "status ok"
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
