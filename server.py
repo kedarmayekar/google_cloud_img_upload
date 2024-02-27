@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import datetime
 import os
-import json
 load_dotenv()
 
 app = Flask(__name__)
@@ -12,12 +11,24 @@ CORS(app)
 
 # This is new
 GOOGLE_CLOUD_BUCKET_NAME = os.environ['GOOGLE_CLOUD_BUCKET_NAME']
-GCP_CREDENTIALS = os.environ['GCP_CREDENTIALS']
+credentials_dict= {
+            "type": os.environ['GCP_type'],
+            "project_id": os.environ['GCP_project_id'],
+            "private_key_id": os.environ['GCP_private_key_id'],
+            "private_key": os.environ['GCP_private_key'],
+            "client_email": os.environ['GCP_client_email'],
+            "client_id": os.environ['GCP_client_id'],
+            "auth_uri": os.environ['GCP_auth_uri'],
+            "token_uri": os.environ['GCP_token_uri'],
+            "auth_provider_x509_cert_url": os.environ['GCP_auth_provider_x509_cert_url'],
+            "client_x509_cert_url": os.environ['GCP_client_x509_cert_url'],
+            "universe_domain": os.environ['GCP_universe_domain']
+            }
+
 def upload_image(uploaded_image):
     """ Uploads images to google cloud which are uploaded by frontend """
     try:
         # Define your credentials (replace with your own)
-        credentials_dict = json.loads(GCP_CREDENTIALS)
         client = storage.Client.from_service_account_info(credentials_dict)
 
         # Define a unique filename based on timestamp
