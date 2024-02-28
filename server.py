@@ -27,27 +27,24 @@ credentials_dict= {
 
 def upload_image(uploaded_image):
     """ Uploads images to google cloud which are uploaded by frontend """
-    try:
-        # Define your credentials (replace with your own)
-        client = storage.Client.from_service_account_info(credentials_dict)
+    # Define your credentials (replace with your own)
+    client = storage.Client.from_service_account_info(credentials_dict)
 
-        # Define a unique filename based on timestamp
-        filename = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
+    # Define a unique filename based on timestamp
+    filename = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
 
-        # Create a blob object
-        blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(filename)
+    # Create a blob object
+    blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(filename)
 
-        # Upload the image
-        blob.upload_from_string(
+    # Upload the image
+    blob.upload_from_string(
             uploaded_image.read(),
             content_type=uploaded_image.content_type
-        )
+    )
 
-        print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
-        return [True, None]
-    except Exception as ae:
-        print('func ',ae)
-        return [False, ae]
+    print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
+    return True
+
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -57,14 +54,12 @@ def upload():
 
         image = request.files['image']
         upload_status = upload_image(image)
-        if upload_status[0]:
+        if upload_status:
             return jsonify({'message': 'Image uploaded successfully'}), 200
-        else:
-            return jsonify({'message': 'Internal Server Error', 'error': str(upload_status[1])}).headers.add('Access-Control-Allow-Origin', '*'), 500
 
     except Exception as e:
         print('api call ',e)
-        return jsonify({'message': 'Internal Server Error', 'error': str(e)}).headers.add('Access-Control-Allow-Origin', '*'), 500
+        return jsonify({'message': 'Internal Server Error Upload failure', 'error': f'{e}'}).headers.add('Access-Control-Allow-Origin', '*'), 500
 
 @app.route('/', methods=['GET'])
 def hello():
