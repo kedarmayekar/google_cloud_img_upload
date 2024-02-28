@@ -44,10 +44,10 @@ def upload_image(uploaded_image):
         )
 
         print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
-        return (True, None)
+        return [True, None]
     except Exception as ae:
         print('func ',ae)
-        return (False, ae)
+        return [False, ae]
 
 @app.route('/upload', methods=['POST'])
 def upload():
