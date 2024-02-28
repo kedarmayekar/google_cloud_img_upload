@@ -44,10 +44,10 @@ def upload_image(uploaded_image):
         )
 
         print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
-        return True
+        return (True, None)
     except Exception as ae:
         print('func ',ae)
-        return False
+        return (False, ae)
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -56,13 +56,15 @@ def upload():
             return jsonify({'error': 'No image provided'}), 400
 
         image = request.files['image']
-        if upload_image(image):
+        upload_status = upload_image(image)
+        if upload_status[0]:
             return jsonify({'message': 'Image uploaded successfully'}), 200
         else:
-            return jsonify({'message': 'Internal Server Error'}), 500
+            return jsonify({'message': 'Internal Server Error', 'error': upload_status[1]}), 500
 
     except Exception as e:
         print('api call ',e)
+        return jsonify({'message': 'Internal Server Error', 'error': e}), 500
 
 @app.route('/', methods=['GET'])
 def hello():
