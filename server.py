@@ -60,11 +60,11 @@ def upload():
         if upload_status[0]:
             return jsonify({'message': 'Image uploaded successfully'}), 200
         else:
-            return jsonify({'message': 'Internal Server Error', 'error': upload_status[1]}), 500
+            return jsonify({'message': 'Internal Server Error', 'error': upload_status[1]}).headers.add('Access-Control-Allow-Origin', '*'), 500
 
     except Exception as e:
         print('api call ',e)
-        return jsonify({'message': 'Internal Server Error', 'error': e}), 500
+        return jsonify({'message': 'Internal Server Error', 'error': e}).headers.add('Access-Control-Allow-Origin', '*'), 500
 
 @app.route('/', methods=['GET'])
 def hello():
