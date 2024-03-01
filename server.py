@@ -61,8 +61,10 @@ def upload():
         print('api call ',e)
         return jsonify({'message': 'Internal Server Error Upload failure', 'error': f'{e}'}).headers.add('Access-Control-Allow-Origin', '*'), 500
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET','POST'])
 def hello():
+    if request.method == 'POST':
+        return jsonify({'message': 'Working route method'}), 200
     return jsonify({'message': 'ok'}), 200
 
 @app.route('/status', methods=['GET'])
