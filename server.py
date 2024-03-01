@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import datetime
 import os
+import asyncio
 load_dotenv()
 
 app = Flask(__name__)
@@ -25,41 +26,36 @@ credentials_dict= {
             "universe_domain": os.environ['GCP_universe_domain']
             }
 
-def upload_image(uploaded_image):
+
+async def upload_image(uploaded_image):
     """ Uploads images to google cloud which are uploaded by frontend """
     # Define your credentials (replace with your own)
     client = storage.Client.from_service_account_info(credentials_dict)
 
-    # Define a unique filename based on timestamp
     filename = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
-
-    # Create a blob object
     blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(filename)
-
-    # Upload the image
-    blob.upload_from_string(
-            uploaded_image.read(),
-            content_type=uploaded_image.content_type
-    )
+    
+    # Use async upload method
+    await asyncio.get_event_loop().run_in_executor(None, blob.upload_from_string, uploaded_image.read(), uploaded_image.content_type)
 
     print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
     return True
 
-
 @app.route('/upload', methods=['POST'])
-def upload():
+async def upload():
     try:
         if 'image' not in request.files:
             return jsonify({'error': 'No image provided'}), 400
 
         image = request.files['image']
-        upload_status = upload_image(image)
+        upload_status = await upload_image(image)
         if upload_status:
             return jsonify({'message': 'Image uploaded successfully'}), 200
 
     except Exception as e:
-        print('api call ',e)
-        return jsonify({'message': 'Internal Server Error Upload failure', 'error': f'{e}'}).headers.add('Access-Control-Allow-Origin', '*'), 500
+        print('api call ', e)
+        return jsonify({'message': 'Internal Server Error Upload failure', 'error': f'{e}'}), 500
+    
 
 @app.route('/', methods=['GET','POST'])
 def hello():
