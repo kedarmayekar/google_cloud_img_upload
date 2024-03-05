@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 import datetime
 import os
+import json
+from cryptography.fernet import Fernet
+import base64
 load_dotenv()
 
 app = Flask(__name__)
@@ -11,19 +14,29 @@ CORS(app)
 
 # This is new
 GOOGLE_CLOUD_BUCKET_NAME = os.environ['GOOGLE_CLOUD_BUCKET_NAME']
-credentials_dict= {
-            "type": os.environ['GCP_type'],
-            "project_id": os.environ['GCP_project_id'],
-            "private_key_id": os.environ['GCP_private_key_id'],
-            "private_key": os.environ['GCP_private_key'],
-            "client_email": os.environ['GCP_client_email'],
-            "client_id": os.environ['GCP_client_id'],
-            "auth_uri": os.environ['GCP_auth_uri'],
-            "token_uri": os.environ['GCP_token_uri'],
-            "auth_provider_x509_cert_url": os.environ['GCP_auth_provider_x509_cert_url'],
-            "client_x509_cert_url": os.environ['GCP_client_x509_cert_url'],
-            "universe_domain": os.environ['GCP_universe_domain']
-            }
+ENCRYPTION_KEY = os.environ['ENCRYPTION_KEY']
+ENCRYPTED_GCP_DATA = os.environ['ENCRYPTED_GCP_DATA']
+
+def convert_string_to_bytes(string_data):
+    bytes_data = string_data.encode('utf-8')
+    return bytes_data
+
+cipher_suite = Fernet(convert_string_to_bytes(ENCRYPTION_KEY))
+
+def decrypt_from_base64(base64_encrypted_data):
+    # Decode the Base64 data
+    encrypted_data = base64.b64decode(base64_encrypted_data.encode('utf-8'))
+
+    # Decrypt the data
+    decrypted_data = cipher_suite.decrypt(encrypted_data)
+
+    # Convert bytes to JSON
+    json_data = json.loads(decrypted_data.decode('utf-8'))
+
+    return json_data
+
+# Decrypt Base64 data to get back JSON
+credentials_dict = decrypt_from_base64(ENCRYPTED_GCP_DATA)
 
 def upload_image(uploaded_image):
     """ Uploads images to google cloud which are uploaded by frontend """
