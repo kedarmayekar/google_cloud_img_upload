@@ -12,6 +12,14 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+
 # This is new
 GOOGLE_CLOUD_BUCKET_NAME = os.environ['GOOGLE_CLOUD_BUCKET_NAME']
 ENCRYPTION_KEY = os.environ['ENCRYPTION_KEY']
@@ -50,7 +58,12 @@ def upload_image(uploaded_image):
     blob = client.bucket(GOOGLE_CLOUD_BUCKET_NAME).blob(filename)
 
     # Upload the image
-    blob.upload_from_filename(uploaded_image)
+    # blob.upload_from_filename(uploaded_image)
+     # Upload the image
+    blob.upload_from_string(
+            uploaded_image.read(),
+            content_type=uploaded_image.content_type
+        )
     print(f"Image uploaded to {GOOGLE_CLOUD_BUCKET_NAME}")
     return True
 
@@ -62,11 +75,12 @@ def upload():
             return jsonify({'error': 'No image provided'}), 400
 
         image = request.files['image']
-        # write uploaded image to images folder
-        file_path=f'./images/{image.filename}'
-        print('file path ',file_path)
-        image.save(file_path)
-        upload_status = upload_image(file_path)
+        upload_status = upload_image(image)
+        # # write uploaded image to images folder
+        # file_path=f'./images/{image.filename}'
+        # print('file path ',file_path)
+        # image.save(file_path)
+        # upload_status = upload_image(file_path)
         if upload_status:
             return jsonify({'message': 'Image uploaded successfully'}), 200
 
